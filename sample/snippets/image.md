@@ -1,0 +1,1 @@
+![Alt text](http://placehold.it/350x150 "Optional title")

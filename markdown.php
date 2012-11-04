@@ -67,30 +67,32 @@ class Markdown{
 		$i = 0;
 		
 		/*
-			### RegEx Partials 
-		*/
-		$EOL = '(\r|\r\n|\n)';
-		
-		/*
 			### Resolve Block Elements
 		*/
 		
-		// Wrap the whole thing into a single paragraph
-		$data = '<p>'.trim($data).'</p>';
+		// Line breaks
+		$patternArray[] = "/(\r?\n){1}/";
+		$replaceArray[] = "<br>";
 		
-		// Convert any 2 EOL into a paragraph break
-		$patternArray[] = "/{$EOL}{2}/";
-		$replaceArray[] = '</p><p>';
-		
-		// Convert every remaining EOL into a line break
-		$patternArray[] = "/{$EOL}{1}/";
-		$replaceArray[] = '<br>';
+		// Paragraphs
+		$patternArray[] = "/^(.*)$/s";
+		$replaceArray[] = "<p>$1</p>";
+		$patternArray[] = "/(<br>){2}/s";
+		$replaceArray[] = "</p><p>";
 		
 		// Headers
-		for($j=6; $j>0; $j--):
-			$patternArray[] = "/(?:<p>)#{{$j}}(.*?)(?:#{{$j}})?(?:<br>|<\/p>)(?:<\/p>)?/";
-			$replaceArray[] = '<h'.$j.'>$1</h'.$j.'><p>';
-		endfor;
+		$patternArray[] = "/(?:(?:<p>)?<br>|<p>)\s?#{6}\s?(.*?)\s?(?:<br>|<\/p>|(<.*?>))/";
+		$replaceArray[] = '<h6>$1</h6>$2';
+		$patternArray[] = "/(?:(?:<p>)?<br>|<p>)\s?#{5}\s?(.*?)\s?(?:<br>|<\/p>|(<.*?>))/";
+		$replaceArray[] = '<h5>$1</h5>$2';
+		$patternArray[] = "/(?:(?:<p>)?<br>|<p>)\s?#{4}\s?(.*?)\s?(?:<br>|<\/p>|(<.*?>))/";
+		$replaceArray[] = '<h4>$1</h4>$2';
+		$patternArray[] = "/(?:(?:<p>)?<br>|<p>)\s?#{3}\s?(.*?)\s?(?:<br>|<\/p>|(<.*?>))/";
+		$replaceArray[] = '<h3>$1</h3>$2';
+		$patternArray[] = "/(?:(?:<p>)?<br>|<p>)\s?#{2}\s?(.*?)\s?(?:<br>|<\/p>|(<.*?>))/";
+		$replaceArray[] = '<h2>$1</h2>$2';
+		$patternArray[] = "/(?:(?:<p>)?<br>|<p>)\s?#{1}\s?(.*?)\s?(?:<br>|<\/p>|(<.*?>))/";
+		$replaceArray[] = '<h1>$1</h1>$2';
 		
 		// Ordered Lists
 		$patternArray[] = "/(?:<p>)(?:\d*[).]?\t)(.*?)(?:<\/p>)/s";
@@ -101,20 +103,28 @@ class Markdown{
 		$replaceArray[] = '<ul><li>$1</li></ul>';
 		
 		// List items
-		$patternArray[] = "/(?:\d*[).]?|\+)\t/s";
+		$patternArray[] = "/<br>(?:\d*[.]?|\+)\t/s";
 		$replaceArray[] = '$1</li><li>$2';
+		
+		// Images
+		$patternArray[] = "/!\[(.*?)\]\((.*?)\s\"(.*?)\"\)/";
+		$replaceArray[] = '<img src="$2" alt="$1" title="$3"/>';
 		
 		/*
 			### Resolve Inline Elements
 		*/
 		
 		// Emphasize a lot
-		$patternArray[] = '/\*{2}(.*?)\*{2}?/';
+		$patternArray[] = '/[\*_]{2}(.*?)[\*_]{2}?/';
 		$replaceArray[] = '<strong>$1</strong>';
 		
 		// Emphasize a little
-		$patternArray[] = '/\*{1}(.*?)\*{1}?/';
+		$patternArray[] = '/[\*_]{1}(.*?)[\*_]{1}?/';
 		$replaceArray[] = '<em>$1</em>';
+		
+		// Quirks
+		$patternArray[] = '/<p>\s*?<\/p>/';
+		$replaceArray[] = '<p>&nbsp;</p>';
 		
 		return preg_replace($patternArray, $replaceArray, $data);
 	}
